@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Khaana — AI Calorie Tracker for Indian Food</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<div class="page-shell">
+
+  <div class="topbar">
+    <div class="brand">
+      <div class="brand-mark">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 11a8 8 0 0 0 16 0Z"/>
+          <path d="M4 11h16"/>
+          <path d="M12 11V4"/>
+          <path d="M9 4c0 1.2.8 1.6.8 2.6S9 8.4 9 8.4"/>
+          <path d="M15 4c0 1.2-.8 1.6-.8 2.6s.8 1.4.8 1.4"/>
+        </svg>
+      </div>
+      <div>
+        <div class="brand-name">Khaana</div>
+        <div class="brand-sub">AI calorie tracker for Indian food</div>
+      </div>
+    </div>
+    <button class="icon-btn" aria-label="Profile">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="8" r="3.5"/>
+        <path d="M5 20c0-3.6 3.1-6 7-6s7 2.4 7 6"/>
+      </svg>
+    </button>
+  </div>
+
+  <div class="card log-card" id="logCard">
+    <div class="log-header">
+      <div>
+        <div class="log-title serif">Today's Log</div>
+        <div class="log-date" id="logDate"></div>
+      </div>
+      <div class="log-total">
+        <span class="log-total-number serif" id="logTotalCals">0</span>
+        <span class="log-total-unit">kcal today</span>
+      </div>
+    </div>
+    <div id="logList" class="log-list">
+      <div class="log-empty" id="logEmpty">No meals logged yet today. Analyse a photo below and tap "Add to Today's Log".</div>
+    </div>
+  </div>
+
+  <div class="intro">
+    <h1 class="serif">Photo kheencho,<br/>calories jaano</h1>
+    <p>Snap your thali, biryani, street food — whatever you're eating — and get an instant calorie breakdown.</p>
+  </div>
+
+  <div class="drop-zone" id="dropZone">
+    <input type="file" id="fileInput" accept="image/*" />
+    <div class="drop-icon-wrap">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M4 16.5V18a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-1.5"/>
+        <path d="M7 9l5-5 5 5"/>
+        <path d="M12 4v12"/>
+      </svg>
+    </div>
+    <h3>Drop your food photo here</h3>
+    <p>Works with thali, street food, home-cooked meals, restaurant dishes</p>
+    <div class="browse-btn">Choose Photo</div>
+  </div>
+
+  <div class="preview-box" id="previewBox">
+    <img id="previewImg" src="" alt="Food preview" />
+    <div class="preview-actions">
+      <button class="analyze-btn" id="analyzeBtn" onclick="analyzeFood()">Analyse Calories</button>
+      <button class="change-btn" onclick="resetAll()">Change Photo</button>
+    </div>
+  </div>
+
+  <div class="loading-state" id="loadingState">
+    <div class="spinner"></div>
+    <p>Identifying your food and estimating calories…</p>
+  </div>
+
+  <div class="results-card card" id="resultsCard">
+    <div class="result-header">
+      <h2 id="dishTitle">Detected Dish</h2>
+      <p id="dishSubtitle">Estimated for standard serving</p>
+    </div>
+
+    <div class="calorie-hero">
+      <div class="calorie-number" id="totalCals">—</div>
+      <div class="calorie-unit">kcal</div>
+      <div class="calorie-range" id="calRange"></div>
+    </div>
+
+    <div class="macros-section">
+      <div class="macro-row-item">
+        <div class="macro-row-top">
+          <span class="macro-name">Carbs</span>
+          <span class="macro-grams" id="carbs">0g</span>
+        </div>
+        <div class="macro-bar-track"><div class="macro-bar-fill carbs-fill" id="carbsBar"></div></div>
+      </div>
+      <div class="macro-row-item">
+        <div class="macro-row-top">
+          <span class="macro-name">Protein</span>
+          <span class="macro-grams" id="protein">0g</span>
+        </div>
+        <div class="macro-bar-track"><div class="macro-bar-fill protein-fill" id="proteinBar"></div></div>
+      </div>
+      <div class="macro-row-item">
+        <div class="macro-row-top">
+          <span class="macro-name">Fat</span>
+          <span class="macro-grams" id="fat">0g</span>
+        </div>
+        <div class="macro-bar-track"><div class="macro-bar-fill fat-fill" id="fatBar"></div></div>
+      </div>
+    </div>
+
+    <div class="dishes-section">
+      <div class="section-title">Breakdown by Item</div>
+      <div id="dishList"></div>
+    </div>
+
+    <div class="notes-section">
+      <p id="noteText"></p>
+    </div>
+
+    <button class="analyze-btn add-log-btn" id="addToLogBtn" onclick="addToLog()">Add to Today's Log</button>
+    <button class="try-again-btn" onclick="resetAll()">Try Another Photo</button>
+  </div>
+
+  <div class="error-card" id="errorCard">
+    <strong>Couldn't analyse this photo.</strong> <span id="errorMsg"></span>
+  </div>
+
+  <div class="examples">
+    <div class="examples-label">Supported foods include</div>
+    <div class="chips">
+      <span class="chip">Dal-Chawal</span>
+      <span class="chip">Chole Bhature</span>
+      <span class="chip">Biryani</span>
+      <span class="chip">Dosa</span>
+      <span class="chip">Thali</span>
+      <span class="chip">Paneer Butter Masala</span>
+      <span class="chip">Paratha</span>
+      <span class="chip">Pav Bhaji</span>
+      <span class="chip">Samosa</span>
+    </div>
+  </div>
+
+  <footer>
+    <strong>Khaana</strong> — Prototype v0.1 · Calorie estimates are approximate and may vary based on portion size, cooking method, and ingredients.
+  </footer>
+
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
