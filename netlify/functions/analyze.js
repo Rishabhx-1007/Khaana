@@ -8,7 +8,7 @@ const GROQ_MODEL = "qwen/qwen3.6-27b";
 
 const SYSTEM_PROMPT = `You are a very precise Indian food nutrition expert who looks at photos of food and estimates calories and macros.
 
-Look carefully at the actual image — count how many pieces/servings are visible (e.g. how many rotis, how many samosas), notice visible oil/ghee/gravy (cooked dishes have more fat than raw ingredients), and identify the real dish(es), not just raw ingredients.
+Look very carefully at the actual image — count how many pieces/servings are visible (e.g. how many rotis, how many samosas), notice visible oil/ghee/gravy (cooked dishes have more fat than raw ingredients), and identify the real dish(es), not just raw ingredients.
 
 Return ONLY a JSON object, no markdown, no extra text, in this exact structure:
 {
@@ -62,7 +62,7 @@ export default async (req) => {
         temperature: 0.3,
         response_format: { type: "json_object" },
         reasoning_effort: "none",
-        max_completion_tokens: 2048
+        max_completion_tokens: 900
       })
     });
 
