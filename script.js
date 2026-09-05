@@ -13,6 +13,7 @@ let currentImageType = "image/jpeg";
 const dropZone = document.getElementById('dropZone');
 const fileInput = document.getElementById('fileInput');
 const previewBox = document.getElementById('previewBox');
+const previewActions = document.getElementById('previewActions');
 const previewImg = document.getElementById('previewImg');
 const loadingState = document.getElementById('loadingState');
 const resultsCard = document.getElementById('resultsCard');
@@ -41,6 +42,7 @@ function handleFile(file) {
     previewImg.src = dataUrl;
     dropZone.style.display = 'none';
     previewBox.style.display = 'block';
+    previewActions.style.display = 'flex';
     resultsCard.style.display = 'none';
     errorCard.style.display = 'none';
   };
@@ -261,7 +263,9 @@ function changeQuantity(itemIndex, delta) {
 async function analyzeFood() {
   if (!currentImageBase64) return;
 
-  previewBox.style.display = 'none';
+  // Keep the photo visible — just hide the Analyse/Change buttons,
+  // since the results card brings its own buttons once results are shown.
+  previewActions.style.display = 'none';
   loadingState.style.display = 'block';
   resultsCard.style.display = 'none';
   errorCard.style.display = 'none';
@@ -274,18 +278,21 @@ async function analyzeFood() {
     if (!result || !result.items || result.items.length === 0) {
       errorCard.style.display = 'block';
       document.getElementById('errorMsg').textContent =
-        (result && result.note) || "Couldn't identify food in this photo. Try a clearer, closer shot.";
-      previewBox.style.display = 'block';
+        "We couldn't identify a dish in this photo. Try a clearer, closer shot with good lighting.";
+      previewActions.style.display = 'flex';
       return;
     }
 
     renderResult(result);
 
   } catch (err) {
+    // Technical detail stays in the console for debugging — the user
+    // only ever sees a plain, friendly message.
+    console.error("analyzeFood failed:", err);
     loadingState.style.display = 'none';
-    previewBox.style.display = 'block';
+    previewActions.style.display = 'flex';
     errorCard.style.display = 'block';
-    document.getElementById('errorMsg').textContent = 'Error: ' + err.message + ' — Check console (F12) for details.';
-    console.error(err);
+    document.getElementById('errorMsg').textContent =
+      "Something went wrong while analysing this photo. Please try again in a moment.";
   }
 }
