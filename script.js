@@ -1,46 +1,31 @@
 /* ============================================================
-   KHAANA — calls our own Netlify function (netlify/functions/analyze.js),
-   which securely holds the Groq API key server-side.
-   No API key lives in this file anymore.
-   ============================================================ */
-
-/* ============================================================
-   DOM ELEMENTS
+   KHAANA — calls our own Netlify function (netlify/functions/analyze.js)
    ============================================================ */
 let currentImageBase64 = null;
 let currentImageType = "image/jpeg";
+let currentResult = null;
 
-const dropZone = document.getElementById('dropZone');
-const fileInput = document.getElementById('fileInput');
+const cameraInput = document.getElementById('cameraInput');
+const galleryInput = document.getElementById('galleryInput');
+const uploadIntro = document.getElementById('uploadIntro');
 const previewBox = document.getElementById('previewBox');
 const previewActions = document.getElementById('previewActions');
 const previewImg = document.getElementById('previewImg');
 const loadingState = document.getElementById('loadingState');
 const resultsCard = document.getElementById('resultsCard');
 const errorCard = document.getElementById('errorCard');
+const mealDescription = document.getElementById('mealDescription');
 
-dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
-dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
-dropZone.addEventListener('drop', e => {
-  e.preventDefault();
-  dropZone.classList.remove('drag-over');
-  const file = e.dataTransfer.files[0];
-  if (file && file.type.startsWith('image/')) handleFile(file);
-});
-
-fileInput.addEventListener('change', e => {
-  const file = e.target.files[0];
-  if (file) handleFile(file);
-});
+cameraInput.addEventListener('change', e => { if (e.target.files[0]) handleFile(e.target.files[0]); });
+galleryInput.addEventListener('change', e => { if (e.target.files[0]) handleFile(e.target.files[0]); });
 
 function handleFile(file) {
   const reader = new FileReader();
   currentImageType = file.type || "image/jpeg";
   reader.onload = e => {
-    const dataUrl = e.target.result;
-    currentImageBase64 = dataUrl.split(',')[1];
-    previewImg.src = dataUrl;
-    dropZone.style.display = 'none';
+    currentImageBase64 = e.target.result.split(',')[1];
+    previewImg.src = e.target.result;
+    uploadIntro.style.display = 'none';
     previewBox.style.display = 'block';
     previewActions.style.display = 'flex';
     resultsCard.style.display = 'none';
@@ -50,48 +35,82 @@ function handleFile(file) {
 }
 
 function resetAll() {
-  dropZone.style.display = 'block';
+  uploadIntro.style.display = 'block';
   previewBox.style.display = 'none';
   loadingState.style.display = 'none';
   resultsCard.style.display = 'none';
   errorCard.style.display = 'none';
-  fileInput.value = '';
+  cameraInput.value = '';
+  galleryInput.value = '';
+  mealDescription.value = '';
   currentImageBase64 = null;
 }
 
 /* ============================================================
-   TODAY'S LOG — persisted in localStorage, so it survives
-   page refreshes and closing/reopening Chrome.
-   Each day gets its own storage key, so logs don't mix across days.
+   NAME — optional, just for a friendly greeting
    ============================================================ */
-function getTodayKey() {
-  const today = new Date().toISOString().slice(0, 10); // e.g. "2026-08-23"
-  return `khaanaLog_${today}`;
+function loadUserName() { return localStorage.getItem('khaanaUserName') || ''; }
+
+function renderGreeting() {
+  const name = loadUserName();
+  const el = document.getElementById('greetingText');
+  el.innerHTML = name
+    ? `Hi, ${name} <button class="name-edit-link" onclick="editUserName()">✎</button>`
+    : `<button class="name-edit-link" onclick="editUserName()">+ Add your name</button>`;
 }
 
-function loadTodayLog() {
-  const raw = localStorage.getItem(getTodayKey());
-  return raw ? JSON.parse(raw) : [];
+function editUserName() {
+  const current = loadUserName();
+  const name = window.prompt("What should we call you? (optional)", current);
+  if (name !== null) {
+    localStorage.setItem('khaanaUserName', name.trim());
+    renderGreeting();
+  }
 }
 
-function saveTodayLog(entries) {
-  localStorage.setItem(getTodayKey(), JSON.stringify(entries));
+/* ============================================================
+   STREAKS
+   ============================================================ */
+function loadStreak() {
+  const raw = localStorage.getItem('khaanaStreak');
+  return raw ? JSON.parse(raw) : { count: 0, lastLoggedDate: null };
 }
+function saveStreak(s) { localStorage.setItem('khaanaStreak', JSON.stringify(s)); }
+
+function updateStreakOnLog() {
+  const streak = loadStreak();
+  const today = new Date().toISOString().slice(0, 10);
+  if (streak.lastLoggedDate === today) return;
+
+  const yesterday = new Date();
+  yesterday.setDate(yesterday.getDate() - 1);
+  streak.count = (streak.lastLoggedDate === yesterday.toISOString().slice(0, 10)) ? streak.count + 1 : 1;
+  streak.lastLoggedDate = today;
+  saveStreak(streak);
+}
+
+function renderStreak() {
+  const streak = loadStreak();
+  document.getElementById('streakCount').textContent = streak.count;
+  document.getElementById('streakBadge').style.display = 'inline-flex';
+}
+
+/* ============================================================
+   TODAY'S LOG — persisted in localStorage (per-day key)
+   ============================================================ */
+function getTodayKey() { return `khaanaLog_${new Date().toISOString().slice(0, 10)}`; }
+function loadTodayLog() { const raw = localStorage.getItem(getTodayKey()); return raw ? JSON.parse(raw) : []; }
+function saveTodayLog(entries) { localStorage.setItem(getTodayKey(), JSON.stringify(entries)); }
 
 function renderTodayLog() {
   const entries = loadTodayLog();
   const logList = document.getElementById('logList');
   const logEmpty = document.getElementById('logEmpty');
 
-  document.getElementById('logDate').textContent = new Date().toLocaleDateString('en-IN', {
-    weekday: 'long', day: 'numeric', month: 'long'
-  });
-
-  const totalCals = entries.reduce((sum, e) => sum + e.calories, 0);
-  document.getElementById('logTotalCals').textContent = totalCals;
+  document.getElementById('logDate').textContent = new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long' });
+  document.getElementById('logTotalCals').textContent = entries.reduce((sum, e) => sum + e.calories, 0);
 
   logList.innerHTML = '';
-
   if (entries.length === 0) {
     logList.appendChild(logEmpty);
     logEmpty.style.display = 'block';
@@ -107,18 +126,15 @@ function renderTodayLog() {
         <div class="log-row-time">${entry.time}</div>
       </div>
       <div class="log-row-cal">${entry.calories} kcal</div>
-      <button class="log-row-remove" onclick="removeLogEntry(${index})" aria-label="Remove from log">✕</button>
+      <button class="log-row-remove" onclick="removeLogEntry(${index})" aria-label="Remove">✕</button>
     `;
     logList.appendChild(row);
   });
 }
 
-/* Adds the currently analysed + adjusted meal to today's log */
 function addToLog() {
   if (!currentResult || !currentResult.items) return;
-
-  const items = currentResult.items;
-  const calories = items.reduce((sum, i) => sum + i.quantity * i.caloriesPerUnit, 0);
+  const calories = currentResult.items.reduce((sum, i) => sum + i.quantity * i.caloriesPerUnit, 0);
 
   const entries = loadTodayLog();
   entries.push({
@@ -127,17 +143,15 @@ function addToLog() {
     time: new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })
   });
   saveTodayLog(entries);
+  updateStreakOnLog();
   renderTodayLog();
+  renderStreak();
 
-  // Quick visual confirmation on the button itself
   const btn = document.getElementById('addToLogBtn');
   const originalText = btn.textContent;
   btn.textContent = 'Added ✓';
   btn.disabled = true;
-  setTimeout(() => {
-    btn.textContent = originalText;
-    btn.disabled = false;
-  }, 1500);
+  setTimeout(() => { btn.textContent = originalText; btn.disabled = false; }, 1500);
 }
 
 function removeLogEntry(index) {
@@ -147,81 +161,96 @@ function removeLogEntry(index) {
   renderTodayLog();
 }
 
-// Draw today's log as soon as the page loads
-renderTodayLog();
-
 /* ============================================================
-   Ask our own serverless function to analyse the photo.
-   The function holds the Groq key and prompt — we just send the image.
+   ANALYSIS — calls our serverless function
    ============================================================ */
-async function getEstimateFromGroqVision(base64Image, mimeType) {
+async function getEstimateFromGroqVision(base64Image, mimeType, description) {
   const response = await fetch("/.netlify/functions/analyze", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ base64Image, mimeType })
+    body: JSON.stringify({ base64Image, mimeType, description })
   });
-
   const result = await response.json();
   console.log("Analyze function response:", result);
-
-  if (result.error) {
-    throw new Error(result.error);
-  }
-
+  if (result.error) throw new Error(result.error);
   return result;
 }
 
+async function analyzeFood() {
+  if (!currentImageBase64) return;
+
+  previewActions.style.display = 'none';
+  loadingState.style.display = 'block';
+  resultsCard.style.display = 'none';
+  errorCard.style.display = 'none';
+
+  try {
+    const description = mealDescription.value.trim();
+    const result = await getEstimateFromGroqVision(currentImageBase64, currentImageType, description);
+    loadingState.style.display = 'none';
+
+    if (!result || !result.items || result.items.length === 0) {
+      errorCard.style.display = 'block';
+      document.getElementById('errorMsg').textContent = "We couldn't identify a dish in this photo. Try a clearer, closer shot with good lighting.";
+      previewActions.style.display = 'flex';
+      return;
+    }
+    renderResult(result);
+  } catch (err) {
+    console.error("analyzeFood failed:", err);
+    loadingState.style.display = 'none';
+    previewActions.style.display = 'flex';
+    errorCard.style.display = 'block';
+    document.getElementById('errorMsg').textContent = "Something went wrong while analysing this photo. Please try again in a moment.";
+  }
+}
+
 /* ============================================================
-   Holds the currently displayed result so stepper taps can
-   recompute and re-render without another API call.
+   RESULT RENDERING — rings for calories + each macro, editable item names
    ============================================================ */
-let currentResult = null;
+function setRingFill(id, percent, circumference) {
+  const el = document.getElementById(id);
+  el.style.strokeDasharray = circumference;
+  el.style.strokeDashoffset = circumference * (1 - Math.min(100, percent) / 100);
+}
 
 function renderResult(result) {
   currentResult = result;
-
   document.getElementById('dishTitle').textContent = result.title;
   document.getElementById('dishSubtitle').textContent = result.subtitle;
   document.getElementById('noteText').innerHTML = result.note;
-
   renderDishList();
   recomputeAndRenderTotals();
-
   resultsCard.style.display = 'block';
 }
 
-/* Recalculates total calories/macros from each item's quantity × per-unit values */
 function recomputeAndRenderTotals() {
   const items = currentResult.items || [];
-  const totalCalories = items.reduce((sum, item) => sum + item.quantity * item.caloriesPerUnit, 0);
-  const carbs = items.reduce((sum, item) => sum + item.quantity * item.carbsPerUnit, 0);
-  const protein = items.reduce((sum, item) => sum + item.quantity * item.proteinPerUnit, 0);
-  const fat = items.reduce((sum, item) => sum + item.quantity * item.fatPerUnit, 0);
-  const lowRange = Math.round(totalCalories * 0.9);
-  const highRange = Math.round(totalCalories * 1.1);
+  const totalCalories = items.reduce((s, i) => s + i.quantity * i.caloriesPerUnit, 0);
+  const carbs = items.reduce((s, i) => s + i.quantity * i.carbsPerUnit, 0);
+  const protein = items.reduce((s, i) => s + i.quantity * i.proteinPerUnit, 0);
+  const fat = items.reduce((s, i) => s + i.quantity * i.fatPerUnit, 0);
 
   document.getElementById('totalCals').textContent = Math.round(totalCalories);
-  document.getElementById('calRange').innerHTML = `Range: ${lowRange}–${highRange} kcal`;
+  document.getElementById('calRange').innerHTML = `Range: ${Math.round(totalCalories * 0.9)}–${Math.round(totalCalories * 1.1)} kcal`;
   document.getElementById('carbs').textContent = `${Math.round(carbs)}g`;
   document.getElementById('protein').textContent = `${Math.round(protein)}g`;
   document.getElementById('fat').textContent = `${Math.round(fat)}g`;
 
-  // Each bar's width shows that macro's share of total calories (carbs/protein = 4 kcal/g, fat = 9 kcal/g)
-  const carbsKcal = carbs * 4;
-  const proteinKcal = protein * 4;
-  const fatKcal = fat * 9;
-  const macroKcalTotal = carbsKcal + proteinKcal + fatKcal || 1;
+  // Decorative full ring around the total (not tied to a goal yet)
+  setRingFill('calorieRing', 100, 226);
 
-  document.getElementById('carbsBar').style.width = `${(carbsKcal / macroKcalTotal) * 100}%`;
-  document.getElementById('proteinBar').style.width = `${(proteinKcal / macroKcalTotal) * 100}%`;
-  document.getElementById('fatBar').style.width = `${(fatKcal / macroKcalTotal) * 100}%`;
+  // Each macro ring shows its share of total calories (carbs/protein = 4 kcal/g, fat = 9 kcal/g)
+  const carbsKcal = carbs * 4, proteinKcal = protein * 4, fatKcal = fat * 9;
+  const macroTotal = carbsKcal + proteinKcal + fatKcal || 1;
+  setRingFill('carbsBar', (carbsKcal / macroTotal) * 100, 151);
+  setRingFill('proteinBar', (proteinKcal / macroTotal) * 100, 151);
+  setRingFill('fatBar', (fatKcal / macroTotal) * 100, 151);
 }
 
-/* Draws each item row with a quantity stepper */
 function renderDishList() {
   const dishList = document.getElementById('dishList');
   dishList.innerHTML = '';
-
   (currentResult.items || []).forEach((item, index) => {
     const row = document.createElement('div');
     row.className = 'dish-row';
@@ -229,8 +258,7 @@ function renderDishList() {
       <div class="dish-left">
         <div class="dish-icon">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M4 11a8 8 0 0 0 16 0Z"/>
-            <path d="M4 11h16"/>
+            <path d="M4 11a8 8 0 0 0 16 0Z"/><path d="M4 11h16"/>
           </svg>
         </div>
         <div>
@@ -238,10 +266,11 @@ function renderDishList() {
           <div class="dish-portion">${item.unitLabel}</div>
         </div>
       </div>
+      <button class="edit-btn" onclick="fixItemName(${index})" aria-label="Fix this item's name">✎</button>
       <div class="stepper">
-        <button class="stepper-btn" onclick="changeQuantity(${index}, -1)" aria-label="Decrease quantity">−</button>
+        <button class="stepper-btn" onclick="changeQuantity(${index}, -1)" aria-label="Decrease">−</button>
         <span class="stepper-value">${item.quantity}</span>
-        <button class="stepper-btn" onclick="changeQuantity(${index}, 1)" aria-label="Increase quantity">+</button>
+        <button class="stepper-btn" onclick="changeQuantity(${index}, 1)" aria-label="Increase">+</button>
       </div>
       <div class="dish-cal">${Math.round(item.quantity * item.caloriesPerUnit)} kcal</div>
     `;
@@ -249,50 +278,24 @@ function renderDishList() {
   });
 }
 
-/* Called when the user taps a +/- stepper button */
-function changeQuantity(itemIndex, delta) {
-  const item = currentResult.items[itemIndex];
+function changeQuantity(index, delta) {
+  const item = currentResult.items[index];
   item.quantity = Math.max(0, item.quantity + delta);
   renderDishList();
   recomputeAndRenderTotals();
 }
 
-/* ============================================================
-   MAIN FLOW
-   ============================================================ */
-async function analyzeFood() {
-  if (!currentImageBase64) return;
-
-  // Keep the photo visible — just hide the Analyse/Change buttons,
-  // since the results card brings its own buttons once results are shown.
-  previewActions.style.display = 'none';
-  loadingState.style.display = 'block';
-  resultsCard.style.display = 'none';
-  errorCard.style.display = 'none';
-
-  try {
-    const result = await getEstimateFromGroqVision(currentImageBase64, currentImageType);
-
-    loadingState.style.display = 'none';
-
-    if (!result || !result.items || result.items.length === 0) {
-      errorCard.style.display = 'block';
-      document.getElementById('errorMsg').textContent =
-        "We couldn't identify a dish in this photo. Try a clearer, closer shot with good lighting.";
-      previewActions.style.display = 'flex';
-      return;
-    }
-
-    renderResult(result);
-
-  } catch (err) {
-    // Technical detail stays in the console for debugging — the user
-    // only ever sees a plain, friendly message.
-    console.error("analyzeFood failed:", err);
-    loadingState.style.display = 'none';
-    previewActions.style.display = 'flex';
-    errorCard.style.display = 'block';
-    document.getElementById('errorMsg').textContent =
-      "Something went wrong while analysing this photo. Please try again in a moment.";
+// Fixes just the displayed name (calories/macros usually still roughly hold, per real testing)
+function fixItemName(index) {
+  const item = currentResult.items[index];
+  const newName = window.prompt("What is this actually?", item.name);
+  if (newName && newName.trim()) {
+    item.name = newName.trim();
+    renderDishList();
   }
 }
+
+// Initial render on page load
+renderGreeting();
+renderTodayLog();
+renderStreak();

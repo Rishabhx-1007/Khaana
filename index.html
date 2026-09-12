@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Khaana — AI Calorie Tracker for Indian Food</title>
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Manrope:wght@500;600;700&display=swap" rel="stylesheet"/>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
@@ -27,12 +27,19 @@
         <div class="brand-sub">AI calorie tracker for Indian food</div>
       </div>
     </div>
-    <button class="icon-btn" aria-label="Profile">
-      <svg viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-        <circle cx="12" cy="8" r="3.5"/>
-        <path d="M5 20c0-3.6 3.1-6 7-6s7 2.4 7 6"/>
-      </svg>
-    </button>
+    <div class="topbar-right">
+      <div class="streak-pill" id="streakBadge" style="display:none;">🔥 <span id="streakCount">0</span> day streak</div>
+      <button class="icon-btn" aria-label="Profile">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="8" r="3.5"/>
+          <path d="M5 20c0-3.6 3.1-6 7-6s7 2.4 7 6"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <div class="status-row">
+    <div class="greeting" id="greetingText"></div>
   </div>
 
   <div class="card log-card" id="logCard">
@@ -51,27 +58,16 @@
     </div>
   </div>
 
-  <div class="intro">
-    <h1 class="serif">Photo kheencho,<br/>calories jaano</h1>
-    <p>Snap your thali, biryani, street food — whatever you're eating — and get an instant calorie breakdown.</p>
-  </div>
-
-  <div class="drop-zone" id="dropZone">
-    <input type="file" id="fileInput" accept="image/*" capture="environment" />
-    <div class="drop-icon-wrap">
-      <svg viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M4 16.5V18a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-1.5"/>
-        <path d="M7 9l5-5 5 5"/>
-        <path d="M12 4v12"/>
-      </svg>
-    </div>
-    <h3>Drop your food photo here</h3>
+  <div class="upload-intro" id="uploadIntro">
+    <h3 class="serif">Add your food photo</h3>
     <p>Works with thali, street food, home-cooked meals, restaurant dishes</p>
-    <div class="browse-btn">Choose Photo</div>
   </div>
 
   <div class="preview-box" id="previewBox">
     <img id="previewImg" src="" alt="Food preview" />
+    <div class="preview-description">
+      <textarea id="mealDescription" class="meal-description" placeholder="Add a note (optional) — e.g. '3 puris, no sabji'"></textarea>
+    </div>
     <div class="preview-actions" id="previewActions">
       <button class="analyze-btn" id="analyzeBtn" onclick="analyzeFood()">Analyse Calories</button>
       <button class="change-btn" onclick="resetAll()">Change Photo</button>
@@ -90,32 +86,49 @@
     </div>
 
     <div class="calorie-hero">
-      <div class="calorie-number" id="totalCals">—</div>
-      <div class="calorie-unit">kcal</div>
-      <div class="calorie-range" id="calRange"></div>
+      <div class="calorie-ring-wrap">
+        <svg viewBox="0 0 84 84">
+          <circle class="calorie-ring-track" cx="42" cy="42" r="36"/>
+          <circle class="calorie-ring-fill" id="calorieRing" cx="42" cy="42" r="36" stroke-dasharray="226" stroke-dashoffset="0"/>
+        </svg>
+        <div class="calorie-number" id="totalCals">—</div>
+      </div>
+      <div class="calorie-text">
+        <span class="calorie-unit">total kcal for this meal</span>
+        <div class="calorie-range" id="calRange"></div>
+      </div>
     </div>
 
     <div class="macros-section">
-      <div class="macro-row-item">
-        <div class="macro-row-top">
-          <span class="macro-name">Carbs</span>
-          <span class="macro-grams" id="carbs">0g</span>
+      <div class="macro-ring-item">
+        <div class="ring-wrap-sm">
+          <svg viewBox="0 0 60 60">
+            <circle class="ring-track-sm" cx="30" cy="30" r="24"/>
+            <circle class="ring-fill-sm carbs-ring" id="carbsBar" cx="30" cy="30" r="24" stroke-dasharray="151" stroke-dashoffset="151"/>
+          </svg>
         </div>
-        <div class="macro-bar-track"><div class="macro-bar-fill carbs-fill" id="carbsBar"></div></div>
+        <div class="macro-ring-label">Carbs</div>
+        <div class="macro-ring-grams" id="carbs">0g</div>
       </div>
-      <div class="macro-row-item">
-        <div class="macro-row-top">
-          <span class="macro-name">Protein</span>
-          <span class="macro-grams" id="protein">0g</span>
+      <div class="macro-ring-item">
+        <div class="ring-wrap-sm">
+          <svg viewBox="0 0 60 60">
+            <circle class="ring-track-sm" cx="30" cy="30" r="24"/>
+            <circle class="ring-fill-sm protein-ring" id="proteinBar" cx="30" cy="30" r="24" stroke-dasharray="151" stroke-dashoffset="151"/>
+          </svg>
         </div>
-        <div class="macro-bar-track"><div class="macro-bar-fill protein-fill" id="proteinBar"></div></div>
+        <div class="macro-ring-label">Protein</div>
+        <div class="macro-ring-grams" id="protein">0g</div>
       </div>
-      <div class="macro-row-item">
-        <div class="macro-row-top">
-          <span class="macro-name">Fat</span>
-          <span class="macro-grams" id="fat">0g</span>
+      <div class="macro-ring-item">
+        <div class="ring-wrap-sm">
+          <svg viewBox="0 0 60 60">
+            <circle class="ring-track-sm" cx="30" cy="30" r="24"/>
+            <circle class="ring-fill-sm fat-ring" id="fatBar" cx="30" cy="30" r="24" stroke-dasharray="151" stroke-dashoffset="151"/>
+          </svg>
         </div>
-        <div class="macro-bar-track"><div class="macro-bar-fill fat-fill" id="fatBar"></div></div>
+        <div class="macro-ring-label">Fat</div>
+        <div class="macro-ring-grams" id="fat">0g</div>
       </div>
     </div>
 
@@ -136,26 +149,70 @@
     <strong>Couldn't analyse this photo.</strong> <span id="errorMsg"></span>
   </div>
 
-  <div class="examples">
-    <div class="examples-label">Supported foods include</div>
-    <div class="chips">
-      <span class="chip">Dal-Chawal</span>
-      <span class="chip">Chole Bhature</span>
-      <span class="chip">Biryani</span>
-      <span class="chip">Dosa</span>
-      <span class="chip">Thali</span>
-      <span class="chip">Paneer Butter Masala</span>
-      <span class="chip">Paratha</span>
-      <span class="chip">Pav Bhaji</span>
-      <span class="chip">Samosa</span>
-    </div>
-  </div>
-
   <footer>
-    <strong>Khaana</strong> — Prototype v0.1 · Calorie estimates are approximate and may vary based on portion size, cooking method, and ingredients.
+    <div class="footer-tagline serif">Track your daily calories and macros</div>
+    <div class="footer-macros">
+      <div class="footer-macro-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#C1443A" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 20V6"/><path d="M12 6c0-2 1.5-3 3-3-.5 2-1 3-3 3Z"/><path d="M12 6c0-2-1.5-3-3-3 .5 2 1 3 3 3Z"/>
+          <path d="M12 11c0-2 1.5-3 3-3-.5 2-1 3-3 3Z"/><path d="M12 11c0-2-1.5-3-3-3 .5 2 1 3 3 3Z"/>
+        </svg>
+        <span>Carbs</span>
+      </div>
+      <div class="footer-macro-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#8A6240" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+          <ellipse cx="12" cy="12" rx="5" ry="7"/><path d="M12 5v14"/>
+        </svg>
+        <span>Protein</span>
+      </div>
+      <div class="footer-macro-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#D9B23C" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="4" y="8" width="16" height="9" rx="2"/><path d="M4 8l2-3h12l2 3"/><path d="M4 12.5h16"/>
+        </svg>
+        <span>Fat</span>
+      </div>
+    </div>
+
+    <div class="examples">
+      <div class="examples-label">Supported foods include</div>
+      <div class="chips">
+        <span class="chip">Dal-Chawal</span>
+        <span class="chip">Chole Bhature</span>
+        <span class="chip">Biryani</span>
+        <span class="chip">Dosa</span>
+        <span class="chip">Thali</span>
+        <span class="chip">Paneer Butter Masala</span>
+        <span class="chip">Paratha</span>
+        <span class="chip">Pav Bhaji</span>
+        <span class="chip">Samosa</span>
+      </div>
+    </div>
+
+    <div class="footer-line">Khaana · Prototype v0.1. Calorie estimates are approximate and can vary based on portion size, cooking style, and ingredients.</div>
   </footer>
 
 </div>
+
+<div class="floating-upload-bar">
+  <button class="floating-btn" onclick="document.getElementById('cameraInput').click()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M4 8a2 2 0 0 1 2-2h1.2l.9-1.5A1.5 1.5 0 0 1 9.4 4h5.2a1.5 1.5 0 0 1 1.3.75L16.8 6H18a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2Z"/>
+      <circle cx="12" cy="13" r="3.2"/>
+    </svg>
+    Take Photo
+  </button>
+  <div class="floating-divider"></div>
+  <button class="floating-btn" onclick="document.getElementById('galleryInput').click()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="3.5" y="4.5" width="17" height="15" rx="2"/>
+      <circle cx="8.5" cy="9.5" r="1.5"/>
+      <path d="M20.5 15l-5-4.5-4 3.5-2-1.8-5.5 5"/>
+    </svg>
+    Gallery
+  </button>
+</div>
+<input type="file" id="cameraInput" accept="image/*" capture="environment" style="display:none" />
+<input type="file" id="galleryInput" accept="image/*" style="display:none" />
 
 <script src="script.js"></script>
 </body>
