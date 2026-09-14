@@ -92,7 +92,9 @@ function updateStreakOnLog() {
 function renderStreak() {
   const streak = loadStreak();
   document.getElementById('streakCount').textContent = streak.count;
-  document.getElementById('streakBadge').style.display = 'inline-flex';
+  const badge = document.getElementById('streakBadge');
+  badge.title = `${streak.count} day streak`;
+  badge.style.display = 'inline-flex';
 }
 
 /* ============================================================
@@ -109,6 +111,11 @@ function renderTodayLog() {
 
   document.getElementById('logDate').textContent = new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long' });
   document.getElementById('logTotalCals').textContent = entries.reduce((sum, e) => sum + e.calories, 0);
+
+  const carbs = entries.reduce((s, e) => s + (e.carbs || 0), 0);
+  const protein = entries.reduce((s, e) => s + (e.protein || 0), 0);
+  const fat = entries.reduce((s, e) => s + (e.fat || 0), 0);
+  document.getElementById('logMacros').textContent = `${carbs}g carbs · ${protein}g protein · ${fat}g fat`;
 
   logList.innerHTML = '';
   if (entries.length === 0) {
@@ -132,14 +139,29 @@ function renderTodayLog() {
   });
 }
 
+function toggleLogList() {
+  const logList = document.getElementById('logList');
+  const btn = document.getElementById('logToggleBtn');
+  const isHidden = logList.style.display === 'none';
+  logList.style.display = isHidden ? 'block' : 'none';
+  btn.classList.toggle('expanded', isHidden);
+}
+
 function addToLog() {
   if (!currentResult || !currentResult.items) return;
-  const calories = currentResult.items.reduce((sum, i) => sum + i.quantity * i.caloriesPerUnit, 0);
+  const items = currentResult.items;
+  const calories = items.reduce((s, i) => s + i.quantity * i.caloriesPerUnit, 0);
+  const carbs = items.reduce((s, i) => s + i.quantity * i.carbsPerUnit, 0);
+  const protein = items.reduce((s, i) => s + i.quantity * i.proteinPerUnit, 0);
+  const fat = items.reduce((s, i) => s + i.quantity * i.fatPerUnit, 0);
 
   const entries = loadTodayLog();
   entries.push({
     title: currentResult.title,
     calories: Math.round(calories),
+    carbs: Math.round(carbs),
+    protein: Math.round(protein),
+    fat: Math.round(fat),
     time: new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })
   });
   saveTodayLog(entries);
@@ -255,24 +277,33 @@ function renderDishList() {
     const row = document.createElement('div');
     row.className = 'dish-row';
     row.innerHTML = `
-      <div class="dish-left">
-        <div class="dish-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M4 11a8 8 0 0 0 16 0Z"/><path d="M4 11h16"/>
+      <div class="dish-row-top">
+        <div class="dish-left">
+          <div class="dish-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 11a8 8 0 0 0 16 0Z"/><path d="M4 11h16"/>
+            </svg>
+          </div>
+          <div>
+            <div class="dish-name">${item.name}</div>
+            <div class="dish-portion">${item.unitLabel}</div>
+          </div>
+        </div>
+        <div class="stepper">
+          <button class="stepper-btn" onclick="changeQuantity(${index}, -1)" aria-label="Decrease">−</button>
+          <span class="stepper-value">${item.quantity}</span>
+          <button class="stepper-btn" onclick="changeQuantity(${index}, 1)" aria-label="Increase">+</button>
+        </div>
+      </div>
+      <div class="dish-row-bottom">
+        <div class="dish-cal">${Math.round(item.quantity * item.caloriesPerUnit)} kcal</div>
+        <button class="fix-result-link" onclick="fixItemName(${index})">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="10" cy="10" r="6"/><path d="M15 15l4 4"/><path d="M18 4l.6 1.4L20 6l-1.4.6L18 8l-.6-1.4L16 6l1.4-.6Z"/>
           </svg>
-        </div>
-        <div>
-          <div class="dish-name">${item.name}</div>
-          <div class="dish-portion">${item.unitLabel}</div>
-        </div>
+          Fix result
+        </button>
       </div>
-      <button class="edit-btn" onclick="fixItemName(${index})" aria-label="Fix this item's name">✎</button>
-      <div class="stepper">
-        <button class="stepper-btn" onclick="changeQuantity(${index}, -1)" aria-label="Decrease">−</button>
-        <span class="stepper-value">${item.quantity}</span>
-        <button class="stepper-btn" onclick="changeQuantity(${index}, 1)" aria-label="Increase">+</button>
-      </div>
-      <div class="dish-cal">${Math.round(item.quantity * item.caloriesPerUnit)} kcal</div>
     `;
     dishList.appendChild(row);
   });
@@ -285,13 +316,33 @@ function changeQuantity(index, delta) {
   recomputeAndRenderTotals();
 }
 
-// Fixes just the displayed name (calories/macros usually still roughly hold, per real testing)
-function fixItemName(index) {
+// Renames the item immediately, then fetches real nutrition for the corrected name
+async function fixItemName(index) {
   const item = currentResult.items[index];
   const newName = window.prompt("What is this actually?", item.name);
-  if (newName && newName.trim()) {
-    item.name = newName.trim();
+  if (!newName || !newName.trim()) return;
+
+  item.name = newName.trim();
+  renderDishList(); // show the corrected name right away
+
+  try {
+    const response = await fetch('/.netlify/functions/fix-item', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: item.name })
+    });
+    const updated = await response.json();
+    if (updated.error) throw new Error(updated.error);
+
+    item.unitLabel = updated.unitLabel;
+    item.caloriesPerUnit = updated.caloriesPerUnit;
+    item.carbsPerUnit = updated.carbsPerUnit;
+    item.proteinPerUnit = updated.proteinPerUnit;
+    item.fatPerUnit = updated.fatPerUnit;
     renderDishList();
+    recomputeAndRenderTotals();
+  } catch (err) {
+    console.error("fix-item lookup failed, keeping old nutrition values:", err);
   }
 }
 

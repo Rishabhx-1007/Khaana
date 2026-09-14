@@ -325,14 +325,12 @@ body {
   margin-bottom: 0.9rem;
 }
 .dish-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 0.7rem;
   padding: 0.7rem 0;
   border-bottom: 1px solid var(--beige);
 }
 .dish-row:last-child { border-bottom: none; }
+.dish-row-top { display: flex; justify-content: space-between; align-items: center; gap: 0.7rem; }
+.dish-row-bottom { display: flex; justify-content: space-between; align-items: center; margin-top: 0.4rem; }
 .dish-left { display: flex; align-items: center; gap: 0.7rem; flex: 1; min-width: 0; }
 .dish-icon {
   width: 34px;
@@ -346,35 +344,24 @@ body {
 }
 .dish-icon svg { width: 16px; height: 16px; stroke: var(--sage-dark); }
 .dish-name { font-size: 0.9rem; font-weight: 600; color: var(--charcoal); }
-.dish-name-input {
-  font-size: 0.9rem;
-  font-weight: 600;
-  color: var(--charcoal);
-  font-family: 'Inter', sans-serif;
-  border: 1px solid var(--coral);
-  border-radius: 6px;
-  padding: 0.15rem 0.4rem;
-  width: 100%;
-}
 .dish-portion { font-size: 0.76rem; color: var(--muted); }
-.dish-cal { font-size: 0.88rem; font-weight: 600; color: var(--coral); min-width: 60px; text-align: right; }
+.dish-cal { font-size: 0.88rem; font-weight: 600; color: var(--coral); }
 
-.edit-btn {
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  border: none;
-  background: var(--beige);
-  color: var(--muted);
-  font-size: 0.75rem;
-  cursor: pointer;
+.fix-result-link {
   display: flex;
   align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  transition: background 0.15s, color 0.15s;
+  gap: 0.3rem;
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-size: 0.76rem;
+  font-weight: 500;
+  font-family: 'Inter', sans-serif;
+  cursor: pointer;
+  padding: 0;
 }
-.edit-btn:hover { background: #FBEEE9; color: var(--coral); }
+.fix-result-link:hover { color: var(--coral); }
+.fix-result-link svg { width: 14px; height: 14px; }
 
 .stepper {
   display: flex;
@@ -409,8 +396,8 @@ body {
 }
 
 /* NOTES */
-.notes-section { padding: 1.3rem 1.6rem; background: #FBF7F0; }
-.notes-section p { font-size: 0.82rem; color: var(--muted); line-height: 1.6; }
+.notes-section { padding: 1.3rem 1.6rem; }
+.notes-section p { font-size: 0.82rem; color: #55524A; line-height: 1.6; }
 .notes-section p strong { color: var(--coral); }
 
 .try-again-btn {
@@ -430,6 +417,22 @@ body {
 }
 .try-again-btn:hover { background: var(--sage-dark); color: white; }
 
+.feedback-btn {
+  display: block;
+  width: fit-content;
+  margin: 0 auto 1.5rem;
+  background: var(--charcoal);
+  color: white;
+  text-decoration: none;
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 0.7rem 1.4rem;
+  border-radius: 999px;
+  transition: opacity 0.15s;
+}
+.feedback-btn:hover { opacity: 0.85; }
+.footer-feedback-btn { margin: 0.5rem auto 1.8rem; }
+
 .add-log-btn { width: calc(100% - 3.2rem); margin: 1.3rem 1.6rem 0; }
 
 /* TODAY'S LOG CARD */
@@ -442,6 +445,24 @@ body {
 }
 .log-title { font-size: 1.2rem; font-weight: 600; color: var(--charcoal); }
 .log-date { font-size: 0.8rem; color: var(--muted); margin-top: 0.15rem; }
+.log-macros { font-size: 0.76rem; color: var(--muted); margin-top: 0.3rem; }
+.log-header-right { display: flex; align-items: center; gap: 0.6rem; }
+.log-toggle-btn {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 1px solid var(--beige);
+  background: var(--ivory);
+  color: var(--muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s, background 0.15s;
+}
+.log-toggle-btn:hover { background: var(--beige); }
+.log-toggle-btn svg { width: 16px; height: 16px; }
+.log-toggle-btn.expanded { transform: rotate(180deg); }
 .log-total { text-align: right; }
 .log-total-number { font-size: 1.6rem; font-weight: 600; color: var(--coral); display: block; line-height: 1; }
 .log-total-unit { font-size: 0.72rem; color: var(--muted); }
@@ -513,7 +534,7 @@ footer {
 }
 .footer-macro-item svg { width: 24px; height: 24px; }
 .footer-macro-item span { font-size: 0.72rem; color: var(--muted); font-weight: 600; }
-.footer-line { font-size: 0.76rem; padding: 25px; color: var(--muted); }
+.footer-line { font-size: 0.76rem; color: var(--muted); }
 
 /* EXAMPLES */
 .examples { margin: 1.6rem 0 0; }
@@ -523,7 +544,7 @@ footer {
   text-transform: uppercase;
   letter-spacing: 0.08em;
   color: var(--muted);
-  margin-bottom: 1.5rem;
+  margin-bottom: 0.8rem;
   text-align: center;
 }
 .chips { display: flex; flex-wrap: wrap; gap: 0.5rem; justify-content: center; }

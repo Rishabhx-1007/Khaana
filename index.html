@@ -28,7 +28,7 @@
       </div>
     </div>
     <div class="topbar-right">
-      <div class="streak-pill" id="streakBadge" style="display:none;">🔥 <span id="streakCount">0</span> day streak</div>
+      <div class="streak-pill" id="streakBadge" title="0 day streak" style="display:none;">🔥 <span id="streakCount">0</span></div>
       <button class="icon-btn" aria-label="Profile">
         <svg viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
           <circle cx="12" cy="8" r="3.5"/>
@@ -47,13 +47,19 @@
       <div>
         <div class="log-title serif">Today's Log</div>
         <div class="log-date" id="logDate"></div>
+        <div class="log-macros" id="logMacros"></div>
       </div>
-      <div class="log-total">
-        <span class="log-total-number serif" id="logTotalCals">0</span>
-        <span class="log-total-unit">kcal today</span>
+      <div class="log-header-right">
+        <div class="log-total">
+          <span class="log-total-number serif" id="logTotalCals">0</span>
+          <span class="log-total-unit">kcal today</span>
+        </div>
+        <button class="log-toggle-btn" id="logToggleBtn" onclick="toggleLogList()" aria-label="Show meals">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+        </button>
       </div>
     </div>
-    <div id="logList" class="log-list">
+    <div id="logList" class="log-list" style="display:none;">
       <div class="log-empty" id="logEmpty">No meals logged yet today. Analyse a photo below and tap "Add to Today's Log".</div>
     </div>
   </div>
@@ -143,6 +149,7 @@
 
     <button class="analyze-btn add-log-btn" id="addToLogBtn" onclick="addToLog()">Add to Today's Log</button>
     <button class="try-again-btn" onclick="resetAll()">Try Another Photo</button>
+    <a href="https://forms.gle/4E3zQbErhdQbznCw7" target="_blank" rel="noopener" class="feedback-btn">Something look off? Tell us</a>
   </div>
 
   <div class="error-card" id="errorCard">
@@ -173,6 +180,8 @@
       </div>
     </div>
 
+    <a href="https://forms.gle/4E3zQbErhdQbznCw7" target="_blank" rel="noopener" class="feedback-btn footer-feedback-btn">Something look off? Tell us</a>
+
     <div class="examples">
       <div class="examples-label">Supported foods include</div>
       <div class="chips">
@@ -188,7 +197,7 @@
       </div>
     </div>
 
-    <div class="footer-line">Khaana · Prototype v0.1. Calorie estimates are approximate and can vary based on portion size, cooking style, and ingredients.</div>
+    <div class="footer-line">Khaana · Prototype v0.2. Calorie estimates are approximate and can vary based on portion size, cooking style, and ingredients.</div>
   </footer>
 
 </div>
