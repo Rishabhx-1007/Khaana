@@ -29,7 +29,7 @@ body {
 .page-shell {
   max-width: 900px;
   margin: 0 auto;
-  padding: 2.5rem 1.5rem 8rem; /* extra bottom space so floating bar never covers content */
+  padding: 2.5rem 1.5rem 6rem;
 }
 
 /* TOPBAR */
@@ -63,6 +63,7 @@ body {
   color: var(--muted);
   font-weight: 500;
   letter-spacing: 0.01em;
+  line-height: 1.35;
 }
 .icon-btn {
   width: 44px;
@@ -431,7 +432,7 @@ body {
   transition: opacity 0.15s;
 }
 .feedback-btn:hover { opacity: 0.85; }
-.footer-feedback-btn { margin: 0.5rem auto 1.8rem; }
+.footer-feedback-btn { margin: 0.5rem auto 2rem; }
 
 .add-log-btn { width: calc(100% - 3.2rem); margin: 1.3rem 1.6rem 0; }
 
@@ -445,7 +446,18 @@ body {
 }
 .log-title { font-size: 1.2rem; font-weight: 600; color: var(--charcoal); }
 .log-date { font-size: 0.8rem; color: var(--muted); margin-top: 0.15rem; }
-.log-macros { font-size: 0.76rem; color: var(--muted); margin-top: 0.3rem; }
+.log-macros { display: flex; gap: 0.9rem; margin-top: 0.5rem; }
+.log-macro-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #3A3830;
+}
+.log-macro-chip svg { width: 15px; height: 15px; flex-shrink: 0; }
+.log-total-top { display: flex; align-items: center; gap: 0.35rem; }
+.log-total-top svg { width: 26px; height: 26px; }
 .log-header-right { display: flex; align-items: center; gap: 0.6rem; }
 .log-toggle-btn {
   width: 30px;
@@ -512,19 +524,19 @@ body {
 /* FOOTER */
 footer {
   text-align: center;
-  padding: 2.5rem 1rem 1rem;
+  padding: 2.5rem 1rem 15px;
 }
 .footer-tagline {
   font-size: 1rem;
   font-weight: 600;
   color: var(--charcoal);
-  margin-bottom: 1rem;
+  margin-bottom: 1.2rem;
 }
 .footer-macros {
   display: flex;
   justify-content: center;
   gap: 1.8rem;
-  margin-bottom: 1.2rem;
+  margin-bottom: 1.8rem;
 }
 .footer-macro-item {
   display: flex;
@@ -534,16 +546,16 @@ footer {
 }
 .footer-macro-item svg { width: 24px; height: 24px; }
 .footer-macro-item span { font-size: 0.72rem; color: var(--muted); font-weight: 600; }
-.footer-line { font-size: 0.76rem; color: var(--muted); }
+.footer-line { font-size: 0.76rem; color: #55524A; margin-top: 0.5rem; }
 
 /* EXAMPLES */
-.examples { margin: 1.6rem 0 0; }
+.examples { margin: 0 0 2.5rem; }
 .examples-label {
   font-size: 0.74rem;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: var(--muted);
+  color: #55524A;
   margin-bottom: 0.8rem;
   text-align: center;
 }
@@ -554,7 +566,7 @@ footer {
   border-radius: 999px;
   padding: 0.35rem 0.95rem;
   font-size: 0.78rem;
-  color: var(--muted);
+  color: #55524A;
 }
 
 /* FLOATING UPLOAD BAR */

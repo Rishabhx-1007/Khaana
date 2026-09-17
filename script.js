@@ -104,6 +104,16 @@ function getTodayKey() { return `khaanaLog_${new Date().toISOString().slice(0, 1
 function loadTodayLog() { const raw = localStorage.getItem(getTodayKey()); return raw ? JSON.parse(raw) : []; }
 function saveTodayLog(entries) { localStorage.setItem(getTodayKey(), JSON.stringify(entries)); }
 
+function macroIcon(type) {
+  const shapes = {
+    wheat: '<path d="M12 20V6"/><path d="M12 6c0-2 1.5-3 3-3-.5 2-1 3-3 3Z"/><path d="M12 6c0-2-1.5-3-3-3 .5 2 1 3 3 3Z"/><path d="M12 11c0-2 1.5-3 3-3-.5 2-1 3-3 3Z"/><path d="M12 11c0-2-1.5-3-3-3 .5 2 1 3 3 3Z"/>',
+    soy: '<ellipse cx="12" cy="12" rx="5" ry="7"/><path d="M12 5v14"/>',
+    butter: '<rect x="4" y="8" width="16" height="9" rx="2"/><path d="M4 8l2-3h12l2 3"/><path d="M4 12.5h16"/>'
+  };
+  const colors = { wheat: '#C1443A', soy: '#5F8F7D', butter: '#D9B23C' };
+  return `<svg viewBox="0 0 24 24" fill="none" stroke="${colors[type]}" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${shapes[type]}</svg>`;
+}
+
 function renderTodayLog() {
   const entries = loadTodayLog();
   const logList = document.getElementById('logList');
@@ -115,7 +125,11 @@ function renderTodayLog() {
   const carbs = entries.reduce((s, e) => s + (e.carbs || 0), 0);
   const protein = entries.reduce((s, e) => s + (e.protein || 0), 0);
   const fat = entries.reduce((s, e) => s + (e.fat || 0), 0);
-  document.getElementById('logMacros').textContent = `${carbs}g carbs · ${protein}g protein · ${fat}g fat`;
+  document.getElementById('logMacros').innerHTML = `
+    <span class="log-macro-chip">${macroIcon('wheat')}${carbs}g</span>
+    <span class="log-macro-chip">${macroIcon('soy')}${protein}g</span>
+    <span class="log-macro-chip">${macroIcon('butter')}${fat}g</span>
+  `;
 
   logList.innerHTML = '';
   if (entries.length === 0) {

@@ -1,6 +1,6 @@
-const GROQ_MODEL = "qwen/qwen3.6-27b";
+const GROQ_MODEL = "qwen/qwen3.8-27b";
 
-const SYSTEM_PROMPT = `You are an very Indian food nutrition expert. Given the name of a single food item, return typical per-unit calories and macros for one standard serving or piece.
+const SYSTEM_PROMPT = `You are an Indian food nutrition expert. Given the name of a single food item, return typical per-unit calories and macros for one standard serving or piece.
 
 Return ONLY a JSON object, no markdown, no extra text, in this exact structure:
 {
