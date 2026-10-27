@@ -1,4 +1,4 @@
-const GROQ_MODEL = "qwen/qwen3.6-27b";
+const GROQ_MODEL = "qwen/qwen3.8-27b";
 
 const SYSTEM_PROMPT = `You are a precise Indian food nutrition expert who looks at photos of food and estimates calories and macros.
 
