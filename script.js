@@ -69,6 +69,26 @@ function editUserName() {
 }
 
 /* ============================================================
+   DAILY TARGET — set once, applies every day (no daily re-entry)
+   ============================================================ */
+function loadTarget() {
+  const raw = localStorage.getItem('khaanaTarget');
+  return raw ? parseInt(raw, 10) : null;
+}
+function saveTarget(value) { localStorage.setItem('khaanaTarget', String(value)); }
+
+function editTarget() {
+  const current = loadTarget();
+  const input = window.prompt("Set your daily calorie target (you can change this anytime)", current || '');
+  if (input === null) return;
+  const num = parseInt(input, 10);
+  if (!isNaN(num) && num > 0) {
+    saveTarget(num);
+    renderTodayLog();
+  }
+}
+
+/* ============================================================
    STREAKS
    ============================================================ */
 function loadStreak() {
@@ -120,7 +140,18 @@ function renderTodayLog() {
   const logEmpty = document.getElementById('logEmpty');
 
   document.getElementById('logDate').textContent = new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long' });
-  document.getElementById('logTotalCals').textContent = entries.reduce((sum, e) => sum + e.calories, 0);
+  const totalCals = entries.reduce((sum, e) => sum + e.calories, 0);
+  document.getElementById('logTotalCals').textContent = totalCals;
+
+  const target = loadTarget();
+  const targetEl = document.getElementById('logTargetText');
+  if (target) {
+    const remaining = target - totalCals;
+    const remainingText = remaining >= 0 ? `${remaining} kcal left` : `${Math.abs(remaining)} kcal over`;
+    targetEl.innerHTML = `/ ${target} kcal · ${remainingText} <button class="target-edit-link" onclick="editTarget()">✎</button>`;
+  } else {
+    targetEl.innerHTML = `<button class="target-edit-link" onclick="editTarget()">+ Set daily target</button>`;
+  }
 
   const carbs = entries.reduce((s, e) => s + (e.carbs || 0), 0);
   const protein = entries.reduce((s, e) => s + (e.protein || 0), 0);

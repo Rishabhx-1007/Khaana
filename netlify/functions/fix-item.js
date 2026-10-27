@@ -1,6 +1,8 @@
-const GROQ_MODEL = "qwen/qwen3.8-27b";
+const GROQ_MODEL = "qwen/qwen3.6-27b";
 
 const SYSTEM_PROMPT = `You are an Indian food nutrition expert. Given the name of a single food item, return typical per-unit calories and macros for one standard serving or piece.
+
+Reason the way a careful Indian nutrition reference (such as the Indian Food Composition Tables) would: base your numbers on the dish as typically cooked at home (including usual oil/ghee), and keep values consistent with known ranges for that dish rather than inventing an unusual figure.
 
 Return ONLY a JSON object, no markdown, no extra text, in this exact structure:
 {

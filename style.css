@@ -162,6 +162,7 @@ body {
   overflow: hidden;
   border: 1px solid var(--beige);
   background: var(--ivory);
+  box-shadow: 0 10px 28px rgba(31,30,27,0.1), 0 2px 6px rgba(31,30,27,0.06);
 }
 .preview-box img {
   width: 100%;
@@ -437,7 +438,28 @@ body {
 .add-log-btn { width: calc(100% - 3.2rem); margin: 1.3rem 1.6rem 0; }
 
 /* TODAY'S LOG CARD */
-.log-card { margin-bottom: 1.5rem; padding: 1.5rem 1.6rem; }
+.log-card {
+  margin-bottom: 1.5rem;
+  padding: 1.5rem 1.6rem;
+  box-shadow: 0 10px 28px rgba(31,30,27,0.1), 0 2px 6px rgba(31,30,27,0.06);
+}
+.log-target-text {
+  font-size: 0.72rem;
+  color: var(--muted);
+  margin-top: 0.1rem;
+}
+.target-edit-link {
+  color: var(--coral);
+  font-weight: 600;
+  cursor: pointer;
+  background: none;
+  border: none;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.72rem;
+  padding: 0;
+  margin-left: 0.15rem;
+}
+.target-edit-link:hover { text-decoration: underline; }
 .log-header {
   display: flex;
   justify-content: space-between;
@@ -580,7 +602,7 @@ footer {
   background: var(--charcoal);
   padding: 0.4rem;
   border-radius: 999px;
-  box-shadow: 0 10px 30px rgba(31,30,27,0.3);
+  box-shadow: 0 14px 34px rgba(31,30,27,0.38), 0 4px 10px rgba(31,30,27,0.22);
   z-index: 50;
 }
 .floating-btn {
